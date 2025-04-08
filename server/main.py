@@ -18,6 +18,11 @@ app.config['JSON_SORT_KEYS'] = False
 def get_diagnostics():
 
 
+    # TODO
+    # [ ] Refinar as querys abaixo 
+    # [ ] Voltar depois para refinar o de data coloando um range
+
+
     try:
         limit = int(request.args.get('limit', 10))
         page = int(request.args.get('page', 1))
@@ -34,9 +39,47 @@ def get_diagnostics():
 
     offset = (page - 1) * limit
 
+    device_id = request.args.get('device_id')
+    city = request.args.get('city')
+    state = request.args.get('state')
+
+    date = request.args.get('date')
+
+
+
+
+    base_sql = "SELECT * FROM diagnostics WHERE 1=1"
+    filters = []
+    values = []
+
+    if device_id:
+        filters.append("device_id = %s")
+        values.append(device_id)
+
+    if city:
+        filters.append("city = %s")
+        values.append(city)
+
+    if state:
+        filters.append("state = %s")
+        values.append(state)
+
+    if date:
+        filters.append("date = %s")
+        values.append(date)
+
+    # Adiciona os filtros à query principal
+    if filters:
+        base_sql += " AND " + " AND ".join(filters)
+
+    base_sql += " ORDER BY date DESC LIMIT %s OFFSET %s"
+    values.extend([limit, offset])
+
+
+
+
     my_cursor = mydb.cursor()
-    sql = "SELECT * FROM diagnostics LIMIT %s OFFSET %s"
-    my_cursor.execute(sql, (limit, offset))
+    my_cursor.execute(base_sql, values)
     diagnostics = my_cursor.fetchall()
     my_cursor.close()
 
@@ -62,7 +105,13 @@ def get_diagnostics():
                 "status": "ok",
                 "page": page,
                 "limit": limit,
-                "data": diagnosticsList
+                "data": diagnosticsList,
+                "filters": {
+                    "device_id": device_id,
+                    "city": city,
+                    "state": state,
+                    "date": date
+                },
             }
         ),
         200,
