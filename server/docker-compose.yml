@@ -11,6 +11,5 @@ services:
     volumes:
       - ./init:/docker-entrypoint-initdb.d
       - beegol-data:/var/lib/mysql
-
 volumes:
   beegol-data:

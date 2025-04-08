@@ -1,4 +1,3 @@
-CREATE DATABASE IF NOT EXISTS BeegolDatabase;
 USE BeegolDatabase;
 
 CREATE TABLE diagnostics (
@@ -10,7 +9,7 @@ CREATE TABLE diagnostics (
     packet_loss FLOAT,
     quality_of_service FLOAT,
     date TIMESTAMP
-)
+);
 
 
 
