@@ -12,7 +12,6 @@ export default function Login() {
     const handleSubmit = async (event: React.FormEvent) => {
       event.preventDefault()
       console.log({ username, password })
-      // Aqui você pode fazer login ou validação
 
       const response = await api.get('/diagnostics')
       console.log(response)
