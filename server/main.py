@@ -1,6 +1,6 @@
 import mysql.connector
 from flask import Flask, make_response, jsonify, request
-
+from flask_cors import CORS
 
 mydb = mysql.connector.connect(
     host="localhost",
@@ -10,6 +10,7 @@ mydb = mysql.connector.connect(
 )
 
 app = Flask(__name__)
+cors = CORS(app, origins=["*"])
 app.config['JSON_SORT_KEYS'] = False
 
 
