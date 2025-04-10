@@ -50,8 +50,11 @@ def get_diagnostics():
 
 
     base_sql = "SELECT * FROM diagnostics WHERE 1=1"
+    count_sql = "SELECT COUNT(*) as total FROM diagnostics WHERE 1=1"
+
     filters = []
     values = []
+    count_values = []
 
     if device_id:
         filters.append("device_id = %s")
@@ -69,44 +72,39 @@ def get_diagnostics():
         filters.append("date = %s")
         values.append(date)
 
-    # Adiciona os filtros à query principal
     if filters:
         base_sql += " AND " + " AND ".join(filters)
 
-    base_sql += " ORDER BY date DESC LIMIT %s OFFSET %s"
+    base_sql += " LIMIT %s OFFSET %s"
     values.extend([limit, offset])
 
 
 
 
-    my_cursor = mydb.cursor()
+    my_cursor = mydb.cursor(dictionary=True)
+
     my_cursor.execute(base_sql, values)
     diagnostics = my_cursor.fetchall()
+
+
+    my_cursor.execute(count_sql, count_values)
+    total_items = my_cursor.fetchone()["total"]
+    total_pages = (total_items + limit - 1) // limit 
+
+
     my_cursor.close()
 
-    diagnosticsList = list()
 
-    for diagnostic in diagnostics:
-        diagnosticsList.append(
-            {
-                "id": diagnostic[0],
-                "device_id": diagnostic[1],
-                "city": diagnostic[2],
-                "state": diagnostic[3],
-                "latency_ms": diagnostic[4],
-                "packet_loss": diagnostic[5],
-                "quality_of_service": diagnostic[6],
-                "date": diagnostic[7]
-            }
-        )
+
 
     return make_response (
         jsonify(
             {
                 "status": "ok",
-                "page": page,
                 "limit": limit,
-                "data": diagnosticsList,
+                "page": page,
+                "total_pages": total_pages,
+                "data": diagnostics,
                 "filters": {
                     "device_id": device_id,
                     "city": city,
