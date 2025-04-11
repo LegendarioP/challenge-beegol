@@ -2,6 +2,7 @@ import mysql.connector
 from mysql.connector import Error
 from flask import Flask, make_response, jsonify, request
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import time
 
 # mydb = mysql.connector.connect(
@@ -14,6 +15,8 @@ import time
 app = Flask(__name__)
 cors = CORS(app, origins=["*"])
 app.config['JSON_SORT_KEYS'] = False
+app.config['JWT_SECRET_KEY'] = 'beegol-challenge-secret-key'
+jwt = JWTManager(app)
 
 
 def get_connection(retries=3, delay=2):
@@ -33,9 +36,22 @@ def get_connection(retries=3, delay=2):
     raise Exception("Não foi possível conectar ao banco de dados após múltiplas tentativas.")
 
 
-@app.route('/diagnostics', methods=['GET'])
-def get_diagnostics():
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
 
+    if username == "admin" and password == "123456":
+        token = create_access_token(identity=username)
+        return jsonify(access_token=token)
+    
+    return jsonify({"msg": "Usuário ou senha inválidos"}), 401
+
+
+@app.route('/diagnostics', methods=['GET'])
+@jwt_required()
+def get_diagnostics():
     # TODO
     # [ ] Refinar as querys abaixo 
     # [ ] Voltar depois para refinar o de data coloando um range
@@ -127,26 +143,8 @@ def get_diagnostics():
 
 
 
-# @app.route('/diagnostics/states', methods=['GET'])
-# def get_unique_states():
-#     try:
-#         mydb = get_connection()
-#         my_cursor = mydb.cursor(dictionary=True)
-
-#         my_cursor.execute("SELECT DISTINCT state FROM diagnostics")
-#         states = [row["state"] for row in my_cursor.fetchall()]
-
-#         my_cursor.close()
-#         mydb.close()
-
-#         return jsonify({"states": states}), 200
-
-#     except Exception as e:
-#         print("Erro ao buscar estados:", str(e))
-#         return jsonify({"error": "Erro ao buscar estados"}), 500
-
-
 @app.route('/diagnostics/locations', methods=['GET'])
+@jwt_required()
 def get_locations():
     try:
         mydb = get_connection()
@@ -182,6 +180,7 @@ def get_locations():
 
 
 @app.route('/metrics', methods=['GET'])
+@jwt_required()
 def get_metrics():
 
     try:
@@ -197,13 +196,7 @@ def get_metrics():
         mydb = get_connection()
         my_cursor = mydb.cursor(dictionary=True)
 
-        query = """
-            SELECT DATE(date) as day, 
-                   SUM(latency_ms) as total_latency_ms, 
-                   SUM(packet_loss) as total_packet_loss 
-            FROM diagnostics 
-            WHERE 1=1
-        """
+        query = "SELECT DATE(date) as day, SUM(latency_ms) as total_latency_ms, SUM(packet_loss) as total_packet_loss FROM diagnostics WHERE 1=1"
         values = []
 
         if state:
@@ -235,47 +228,6 @@ def get_metrics():
             "message": "Erro no servidor."
         }), 500)
 
-
-
-@app.route('/diagnostics', methods=['POST']) 
-def add_diagnostics():
-
-    data = request.get_json()
-    if not data:
-        return make_response(
-            jsonify(
-                {
-                    "status": "error",
-                    "message": "No data provided.",
-                }
-            ),
-            400,
-        )
-
-    device_id = data.get("device_id")
-    city = data.get("city")
-    state = data.get("state")
-    latency_ms = data.get("latency_ms")
-    packet_loss = data.get("packet_loss")
-    quality_of_service = data.get("quality_of_service")
-    date = data.get("date")
-
-    my_cursor = mydb.cursor()
-    sql = "INSERT INTO diagnostics (device_id, city, state, latency_ms, packet_loss, quality_of_service, date) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-    val = (device_id, city, state, latency_ms, packet_loss, quality_of_service, date)
-    my_cursor.execute(sql, val)
-    mydb.commit()
-    my_cursor.close()
-
-    return make_response(
-        jsonify(
-            {
-                "status": "ok",
-                "message": "Diagnostics added successfully.",
-            }
-        ),
-        201,
-    )
 
 
 
