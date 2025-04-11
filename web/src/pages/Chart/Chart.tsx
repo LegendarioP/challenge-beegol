@@ -14,9 +14,9 @@ import { useEffect, useState } from "react";
 
 
 interface Metric {
-    latency_ms: number;
-    packet_loss: number;
-    date: Date;
+    total_latency_ms: number;
+    total_packet_loss: number;
+    day: Date;
 }
 
 
@@ -28,36 +28,46 @@ export default function Chart() {
     const [location, setLocation] = useState<Record<string, string[]>>({})
     const [selectedState, setSelectedState] = useState<string>('')
     const [selectedCity, setSelectedCity] = useState<string>('')
-
+    const [loading, setLoading] = useState(false)
+    const [stacked, setStacked] = useState(false)
 
     async function fetchMetrics(selectedCity: string, selectedState: string) {
         try {
+            setLoading(true)
             const response = await api.get("/metrics")
 
             setData(response.data.data)
-            console.log(response.data.data)
-            // console.log(response)
+            
+            // console.log(response.data.data)
         } catch (error) {
             console.error(error)
+        }
+        finally {
+            setLoading(false)
         }
     }
 
 
+    function toggleStack() {
+        // console.log("clicked")
+        setStacked(!stacked)
+    }
+
     const datan = {
-        labels: ["January", "February", "March", "April", "May", "June"],
+        labels: data.map((item) => item.day),
         datasets: [
             {
-                label: "Sales",
-                data: [12, 19, 3, 5, 2, 3],
-                barPercentage: .5,
+                label: "Latencia",
+                data: data.map((item) => item.total_latency_ms),
+                barPercentage: .7,
                 backgroundColor: "rgba(75, 192, 192, 0.5)",
                 borderColor: "rgba(75, 192, 192, 1)",
                 borderWidth: 1,
             },
             {
-                label: "Sales",
-                data: [19,25,13,5,4],
-                barPercentage: .5,
+                label: "Perda de pacote",
+                data: data.map((item) => item.total_packet_loss),   
+                barPercentage: .7,
                 backgroundColor: "rgba(255, 0, 0, 0.5)",
                 borderColor: "#ff0000",
                 borderWidth: 1,
@@ -68,6 +78,15 @@ export default function Chart() {
 
     const options = {
         responsive: true,
+        scales: {
+            y: {
+              beginAtZero: true,
+              stacked: stacked
+            },
+            x: {
+                stacked: stacked,
+            },
+        },
         plugins: {
             legend: {
                 position: "top" as const,
@@ -77,6 +96,7 @@ export default function Chart() {
                 text: "Sales Data",
             },
         },
+        
     };
 
 
@@ -90,7 +110,10 @@ export default function Chart() {
             <Container>
                 <h1>Chart</h1>
                 <p>Chart Page</p>
-                <Bar data={datan} options={options} />
+                {!loading && (
+                    <Bar data={datan} options={options} />
+                )}
+                <button type="button" onClick={toggleStack}>Clique</button>
             </Container>
         </div>
     );
