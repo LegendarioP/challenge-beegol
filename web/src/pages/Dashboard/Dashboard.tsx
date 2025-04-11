@@ -16,6 +16,8 @@ import { api } from '../../lib/api'
 import { SelectChangeEvent } from '@mui/material/Select'
 import dayjs from 'dayjs'
 import TopBar from '../../components/TopBar'
+import SideMenu from '../../components/SideMenu'
+import FilterControls from '../../components/Filters'
 
 interface Diagnostic {
   id: number
@@ -114,27 +116,8 @@ export default function Dashboard() {
     <Box sx={{ display: 'flex' }}>
 
       <TopBar title="Painel de Monitoramento" />
-      
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: 240,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: 240, boxSizing: 'border-box' },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            <ListItem component="a" href="/">
-              <ListItemText primary="Home" />
-            </ListItem>
-            <ListItem component="a" href="/chart">
-              <ListItemText primary="Gráfico" />
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
+
+      <SideMenu />
 
       <Box
         component="main"
@@ -151,10 +134,10 @@ export default function Dashboard() {
         </Typography>
 
         {loading ? (
-          <p>Loading...</p>
+          <p>Carregando...</p>
         ) : (
           <>
-            <Card sx={{ mb: 2, p: 2 }}>
+            {/* <Card sx={{ mb: 2, p: 2 }}>
               <Box display="flex" gap={2} flexWrap="wrap">
                 <FormControl sx={{ minWidth: 200 }}>
                   <InputLabel id="select-state">Estado</InputLabel>
@@ -191,7 +174,15 @@ export default function Dashboard() {
                   </Select>
                 </FormControl>
               </Box>
-            </Card>
+            </Card> */}
+
+            <FilterControls
+              location={location}
+              selectedState={selectedState}
+              selectedCity={selectedCity}
+              onStateChange={handleStateChange}
+              onCityChange={handleCityChange}
+            />
 
             <TableContainer component={Paper}>
               <Table
