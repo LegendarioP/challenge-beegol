@@ -1,15 +1,7 @@
 import Paper from '@mui/material/Paper'
 import {
   TableContainer, Table, TableHead, TableRow, TableCell, TableBody,
-  Box, Pagination, FormControl, MenuItem, Select, InputLabel,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  Card,
-  AppBar,
-  Toolbar,
-  Typography
+  Box, Toolbar, Typography
 } from '@mui/material'
 import React from 'react'
 import { api } from '../../lib/api'
@@ -19,6 +11,7 @@ import TopBar from '../../components/TopBar'
 import SideMenu from '../../components/SideMenu'
 import FilterControls from '../../components/Filters'
 import { useLocations } from '../../hooks/useLocations'
+import { PaginationControls } from '../../components/PaginationControls'
 
 interface Diagnostic {
   id: number
@@ -41,12 +34,10 @@ export default function Dashboard() {
   const [selectedState, setSelectedState] = React.useState<string>('')
   const [selectedCity, setSelectedCity] = React.useState('')
 
-  // const [location, setLocation] = React.useState<Record<string, string[]>>({})
 
   const token = localStorage.getItem('jwt')
-  const { location, loading: loadingLocations } = useLocations(token)
+  const { location } = useLocations(token)
 
-  // console.log(location)
 
   async function fetchInitalData(
     limit: number,
@@ -77,21 +68,6 @@ export default function Dashboard() {
     }
   }
 
-
-  // async function fetchLocations() {
-  //   try {
-  //     const response = await api.get('/diagnostics/locations', {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     })
-  //     setLocation(response.data.data)
-  //   }
-  //   catch (error) {
-  //     console.error('Error fetching locations:', error)
-  //   }
-  // }
-
   const handleStateChange = (event: SelectChangeEvent) => {
     const value = event.target.value
     setPage(1)
@@ -107,10 +83,6 @@ export default function Dashboard() {
   React.useEffect(() => {
     fetchInitalData(limit, page, selectedState, selectedCity)
   }, [limit, page, selectedState, selectedCity])
-
-  // React.useEffect(() => {
-  //   fetchLocations()
-  // }, [])
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -186,15 +158,11 @@ export default function Dashboard() {
               </Table>
             </TableContainer>
 
-            <Box display="flex" justifyContent="center" mt={3}>
-              <Pagination
-                count={totalPages || 1}
-                page={page}
-                onChange={(_, value) => setPage(value)}
-                color="primary"
-                shape="rounded"
-              />
-            </Box>
+            <PaginationControls
+              count={totalPages || 1}
+              page={page}
+              onChange={setPage}
+            /> 
           </>
         )}
       </Box>
