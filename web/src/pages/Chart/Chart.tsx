@@ -11,6 +11,7 @@ import {
 } from "chart.js";
 import { api } from "../../lib/api";
 import { useEffect, useState } from "react";
+import dayjs from 'dayjs'
 
 
 interface Metric {
@@ -64,7 +65,7 @@ export default function Chart() {
     }
 
     const dataChart = {
-        labels: data.map((item) => item.day),
+        labels: data.map((item) => dayjs(item.day).format('DD/MM/YYYY')),
         datasets: [
             {
                 label: "Latencia",

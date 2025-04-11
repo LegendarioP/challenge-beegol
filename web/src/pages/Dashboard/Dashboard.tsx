@@ -6,6 +6,7 @@ import {
 import { useEffect, useState } from 'react'
 import { api } from '../../lib/api'
 import { SelectChangeEvent } from '@mui/material/Select'
+import dayjs from 'dayjs'
 
 interface Diagnostic {
   id: number
@@ -162,7 +163,7 @@ export default function Dashboard() {
             <TableCell>{item.latency_ms}</TableCell>
             <TableCell>{item.packet_loss}</TableCell>
             <TableCell>{item.quality_of_service}</TableCell>
-            <TableCell>{item.date}</TableCell>
+            <TableCell>{dayjs(item.date).format('DD/MM/YYYY')}</TableCell>
             </TableRow>
           ))}
           </TableBody>
