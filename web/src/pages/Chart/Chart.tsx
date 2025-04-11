@@ -136,42 +136,42 @@ export default function Chart() {
                 <p>Chart Page</p>
                 <Box display="flex" gap={2} mb={2}>
                     <FormControl sx={{ minWidth: 200 }}>
-                    <InputLabel id="select-state-label">Estado</InputLabel>
-                    <Select
-                    labelId="select-state-label"
-                    label="Estado"
-                    value={selectedState}
-                    onChange={handleStateChange}
-                    >
-                    <MenuItem value="">Todos</MenuItem>
-                    {Object.keys(location).map((state) => (
-                        <MenuItem key={state} value={state}>
-                        {state}
-                        </MenuItem>
-                    ))}
-                    </Select>
+                        <InputLabel id="select-state-label">Estado</InputLabel>
+                        <Select
+                            labelId="select-state-label"
+                            label="Estado"
+                            value={selectedState}
+                            onChange={handleStateChange}
+                        >
+                            <MenuItem value="">Todos</MenuItem>
+                            {Object.keys(location).map((state) => (
+                                <MenuItem key={state} value={state}>
+                                    {state}
+                                </MenuItem>
+                            ))}
+                        </Select>
                     </FormControl>
 
                     <FormControl sx={{ minWidth: 200 }}>
-                    <InputLabel id="select-city-label">Cidade</InputLabel>
-                    <Select
-                    labelId="select-city-label"
-                    label="Cidade"
-                    value={selectedCity}
-                    onChange={handleCityChange}
-                    disabled={!selectedState}
-                    >
-                    <MenuItem value="">Todas</MenuItem>
+                        <InputLabel id="select-city-label">Cidade</InputLabel>
+                        <Select
+                            labelId="select-city-label"
+                            label="Cidade"
+                            value={selectedCity}
+                            onChange={handleCityChange}
+                            disabled={!selectedState}
+                        >
+                            <MenuItem value="">Todas</MenuItem>
 
-                    {location[selectedState]?.map((city) => (
-                        <MenuItem key={city} value={city}>
-                        {city}
-                        </MenuItem>
-                    ))}
-                    
-                    </Select>
+                            {location[selectedState]?.map((city) => (
+                                <MenuItem key={city} value={city}>
+                                    {city}
+                                </MenuItem>
+                            ))}
+
+                        </Select>
                     </FormControl>
-                    </Box>
+                </Box>
                 {!loading && (
                     <Bar data={dataChart} options={options} />
                 )}
