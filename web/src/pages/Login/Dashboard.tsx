@@ -24,13 +24,15 @@ export default function Dashboard() {
   const [totalPages, setTotalPages] = useState<number | null>(null)
   const [limit, setLimit] = useState(10)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
 
-  const [selectedState, setSelectedState] = useState('')
+  const [selectedState, setSelectedState] = useState<string>('')
   const [selectedCity, setSelectedCity] = useState('')
 
+  const [location, setLocation] = useState<Record<string, string[]>>({})
+  
 
-  async function fetchPage(
+
+  async function fetchInitalData(
     limit: number,
     page: number,
     state?: string,
@@ -55,6 +57,19 @@ export default function Dashboard() {
     }
   }
 
+
+  async function fetchLocations() {
+    try {
+      const response = await api.get('/diagnostics/locations')
+      console.log(response)
+      setLocation(response.data.data)
+      // return response.data
+    }
+    catch (error) {
+      console.error('Error fetching locations:', error)
+    }
+  }
+
   const handleStateChange = (event: SelectChangeEvent) => {
     const value = event.target.value
     setSelectedState(value)
@@ -66,8 +81,13 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    fetchPage(limit, page, selectedState, selectedCity)
+    fetchInitalData(limit, page, selectedState, selectedCity)
+    // fetchLocations()
   }, [limit, page, selectedState, selectedCity])
+
+  useEffect(() => {
+    fetchLocations()
+  }, [])
 
   return (
 
@@ -89,7 +109,7 @@ export default function Dashboard() {
           onChange={handleStateChange}
           >
           <MenuItem value="">Todos</MenuItem>
-          {[...new Set(data.map((item) => item.state))].map((state) => (
+          {Object.keys(location).map((state) => (
             <MenuItem key={state} value={state}>
             {state}
             </MenuItem>
@@ -107,14 +127,13 @@ export default function Dashboard() {
           disabled={!selectedState}
           >
           <MenuItem value="">Todas</MenuItem>
-          {[...new Set(data
-            .filter((item) => item.state === selectedState)
-            .map((item) => item.city)
-          )].map((city) => (
+
+          {location[selectedState]?.map((city) => (
             <MenuItem key={city} value={city}>
             {city}
             </MenuItem>
           ))}
+          
           </Select>
         </FormControl>
         </Box>
