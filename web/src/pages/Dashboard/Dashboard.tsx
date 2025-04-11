@@ -1,9 +1,17 @@
 import Paper from '@mui/material/Paper'
 import {
   TableContainer, Table, TableHead, TableRow, TableCell, TableBody,
-  Box, Pagination, FormControl, MenuItem, Select, InputLabel
+  Box, Pagination, FormControl, MenuItem, Select, InputLabel,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Card,
+  AppBar,
+  Toolbar,
+  Typography
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import React from 'react'
 import { api } from '../../lib/api'
 import { SelectChangeEvent } from '@mui/material/Select'
 import dayjs from 'dayjs'
@@ -20,16 +28,18 @@ interface Diagnostic {
 }
 
 export default function Dashboard() {
-  const [data, setData] = useState<Diagnostic[]>([])
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState<number | null>(null)
-  const [limit, setLimit] = useState(10)
-  const [loading, setLoading] = useState(false)
+  const [data, setData] = React.useState<Diagnostic[]>([])
+  const [page, setPage] = React.useState(1)
+  const [totalPages, setTotalPages] = React.useState<number | null>(null)
+  const [limit, setLimit] = React.useState(10)
+  const [loading, setLoading] = React.useState(false)
 
-  const [selectedState, setSelectedState] = useState<string>('')
-  const [selectedCity, setSelectedCity] = useState('')
+  const [selectedState, setSelectedState] = React.useState<string>('')
+  const [selectedCity, setSelectedCity] = React.useState('')
 
-  const [location, setLocation] = useState<Record<string, string[]>>({})
+  const [location, setLocation] = React.useState<Record<string, string[]>>({})
+
+  const token = localStorage.getItem('jwt')
   
 
 
@@ -47,7 +57,11 @@ export default function Dashboard() {
       if (state) params.append('state', state)
       if (city) params.append('city', city)
 
-      const response = await api.get(`/diagnostics?${params.toString()}`)
+      const response = await api.get(`/diagnostics?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       setData(response.data.data)
       setTotalPages(response.data.total_pages)
       setPage(response.data.page)
@@ -61,7 +75,11 @@ export default function Dashboard() {
 
   async function fetchLocations() {
     try {
-      const response = await api.get('/diagnostics/locations')
+      const response = await api.get('/diagnostics/locations', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       console.log(response)
       setLocation(response.data.data)
       // return response.data
@@ -73,113 +91,165 @@ export default function Dashboard() {
 
   const handleStateChange = (event: SelectChangeEvent) => {
     const value = event.target.value
+    setPage(1)
     setSelectedState(value)
     setSelectedCity('')
   }
 
   const handleCityChange = (event: SelectChangeEvent) => {
+    setPage(1)
     setSelectedCity(event.target.value)
   }
 
-  useEffect(() => {
+  React.useEffect(() => {
     fetchInitalData(limit, page, selectedState, selectedCity)
-    // fetchLocations()
   }, [limit, page, selectedState, selectedCity])
 
-  useEffect(() => {
+  React.useEffect(() => {
     fetchLocations()
   }, [])
 
   return (
+    <Box sx={{ display: 'flex' }}>
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          <Typography variant="h6" noWrap component="div">
+            Painel de Monitoramento
+          </Typography>
+        </Toolbar>
+      </AppBar>
 
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome to the dashboard!</p>
-
-      {loading ? (
-      <p>Loading...</p>
-      ) : (
-      <>
-        <Box display="flex" gap={2} mb={2}>
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel id="select-state-label">Estado</InputLabel>
-          <Select
-          labelId="select-state-label"
-          label="Estado"
-          value={selectedState}
-          onChange={handleStateChange}
-          >
-          <MenuItem value="">Todos</MenuItem>
-          {Object.keys(location).map((state) => (
-            <MenuItem key={state} value={state}>
-            {state}
-            </MenuItem>
-          ))}
-          </Select>
-        </FormControl>
-
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel id="select-city-label">Cidade</InputLabel>
-          <Select
-          labelId="select-city-label"
-          label="Cidade"
-          value={selectedCity}
-          onChange={handleCityChange}
-          disabled={!selectedState}
-          >
-          <MenuItem value="">Todas</MenuItem>
-
-          {location[selectedState]?.map((city) => (
-            <MenuItem key={city} value={city}>
-            {city}
-            </MenuItem>
-          ))}
-          
-          </Select>
-        </FormControl>
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: 240,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: { width: 240, boxSizing: 'border-box' },
+        }}
+      >
+        <Toolbar />
+        <Box sx={{ overflow: 'auto' }}>
+          <List>
+            <ListItem component="a" href="/">
+              <ListItemText primary="Home" />
+            </ListItem>
+            <ListItem component="a" href="/chart">
+              <ListItemText primary="Gráfico" />
+            </ListItem>
+          </List>
         </Box>
+      </Drawer>
 
-        <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell align="left">Device ID</TableCell>
-            <TableCell align="left">City</TableCell>
-            <TableCell align="left">State</TableCell>
-            <TableCell align="left">Latency (ms)</TableCell>
-            <TableCell align="left">Packet Loss</TableCell>
-            <TableCell align="left">Quality of Service</TableCell>
-            <TableCell align="left">Date</TableCell>
-          </TableRow>
-          </TableHead>
-          <TableBody>
-          {data.map((item) => (
-            <TableRow key={item.id}>
-            <TableCell>{item.id}</TableCell>
-            <TableCell>{item.device_id}</TableCell>
-            <TableCell>{item.city}</TableCell>
-            <TableCell>{item.state}</TableCell>
-            <TableCell>{item.latency_ms}</TableCell>
-            <TableCell>{item.packet_loss}</TableCell>
-            <TableCell>{item.quality_of_service}</TableCell>
-            <TableCell>{dayjs(item.date).format('DD/MM/YYYY')}</TableCell>
-            </TableRow>
-          ))}
-          </TableBody>
-        </Table>
-        </TableContainer>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          backgroundColor: '#f9f9f9',
+          minHeight: '100vh',
+        }}
+      >
+        <Toolbar />
+        <Typography variant="h4" gutterBottom>
+          Dashboard
+        </Typography>
 
-        <Box display="flex" justifyContent="center" mt={2}>
-        <Pagination
-          count={totalPages || 1}
-          page={page}
-          onChange={(_, value) => setPage(value)}
-          color="primary"
-        />
-        </Box>
-      </>
-      )}
-    </div>
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            <Card sx={{ mb: 2, p: 2 }}>
+              <Box display="flex" gap={2} flexWrap="wrap">
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel id="select-state">Estado</InputLabel>
+                  <Select
+                    labelId="select-state"
+                    label="Estado"
+                    value={selectedState}
+                    onChange={handleStateChange}
+                  >
+                    <MenuItem value="">Todos</MenuItem>
+                    {Object.keys(location).map((state) => (
+                      <MenuItem key={state} value={state}>
+                        {state}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel id="select-city">Cidade</InputLabel>
+                  <Select
+                    labelId="select-city"
+                    label="Cidade"
+                    value={selectedCity}
+                    onChange={handleCityChange}
+                    disabled={!selectedState}
+                  >
+                    <MenuItem value="">Todas</MenuItem>
+                    {location[selectedState]?.map((city) => (
+                      <MenuItem key={city} value={city}>
+                        {city}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </Card>
+
+            <TableContainer component={Paper}>
+              <Table
+                sx={{
+                  minWidth: 650,
+                  '& tbody tr:nth-of-type(odd)': {
+                    backgroundColor: '#f5f5f5',
+                  },
+                }}
+                aria-label="simple table"
+              >
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ID</TableCell>
+                    <TableCell align="left">Device ID</TableCell>
+                    <TableCell align="left">City</TableCell>
+                    <TableCell align="left">State</TableCell>
+                    <TableCell align="left">Latency (ms)</TableCell>
+                    <TableCell align="left">Packet Loss</TableCell>
+                    <TableCell align="left">Quality of Service</TableCell>
+                    <TableCell align="left">Date</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {data.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.device_id}</TableCell>
+                      <TableCell>{item.city}</TableCell>
+                      <TableCell>{item.state}</TableCell>
+                      <TableCell>{item.latency_ms}</TableCell>
+                      <TableCell>{item.packet_loss}</TableCell>
+                      <TableCell>{item.quality_of_service}</TableCell>
+                      <TableCell>
+                        {dayjs(item.date).format('DD/MM/YYYY')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <Box display="flex" justifyContent="center" mt={3}>
+              <Pagination
+                count={totalPages || 1}
+                page={page}
+                onChange={(_, value) => setPage(value)}
+                color="primary"
+                shape="rounded"
+              />
+            </Box>
+          </>
+        )}
+      </Box>
+    </Box>
   )
 }

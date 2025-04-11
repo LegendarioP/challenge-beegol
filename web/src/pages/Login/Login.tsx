@@ -7,23 +7,29 @@ export default function Login() {
 
     const [username, setUsername] = React.useState('')
     const [password, setPassword] = React.useState('')
+    const [error, setError] = React.useState(false)
   
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
+        event.preventDefault()
 
-      try {
-        const response = await api.post('/login', {
-          username,
-          password,
-        })
-        console.log(response.data)
-        localStorage.setItem('jwt', response.data.access_token)
-        
-        if(localStorage.getItem('redirectTo')) {
-            window.location.href = localStorage.getItem('redirectTo') || '/'
+        if (!username || !password) {
+            setError(true)
+            return
         }
-      }
-      catch
+        try {
+            setError(false)
+            const response = await api.post('/login', {
+                username,
+                password,
+            })
+            console.log(response.data)
+            localStorage.setItem('jwt', response.data.access_token)
+
+            if (localStorage.getItem('redirectTo')) {
+                window.location.href = localStorage.getItem('redirectTo') || '/'
+            }
+        }
+        catch
         (error) {
             console.error('Error during login:', error)
             alert('Usuário ou senha inválidos')
@@ -41,6 +47,8 @@ export default function Login() {
                         </Typography>
                         <Box component="form" onSubmit={handleSubmit}>
                             <TextField
+                                error={error && !username}
+                                helperText={error && !username ? "Insira um usuario." : ""}
                                 label="Username"
                                 variant="outlined"
                                 fullWidth
@@ -49,6 +57,8 @@ export default function Login() {
                                 onChange={(e) => setUsername(e.target.value)}
                             />
                             <TextField
+                                error={error && !password}
+                                helperText={error && !password ? "Insira a senha." : ""}
                                 label="Password"
                                 type="password"
                                 variant="outlined"
