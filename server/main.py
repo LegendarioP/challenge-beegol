@@ -127,6 +127,58 @@ def get_diagnostics():
 
 
 
+# @app.route('/diagnostics/states', methods=['GET'])
+# def get_unique_states():
+#     try:
+#         mydb = get_connection()
+#         my_cursor = mydb.cursor(dictionary=True)
+
+#         my_cursor.execute("SELECT DISTINCT state FROM diagnostics")
+#         states = [row["state"] for row in my_cursor.fetchall()]
+
+#         my_cursor.close()
+#         mydb.close()
+
+#         return jsonify({"states": states}), 200
+
+#     except Exception as e:
+#         print("Erro ao buscar estados:", str(e))
+#         return jsonify({"error": "Erro ao buscar estados"}), 500
+
+
+@app.route('/diagnostics/locations', methods=['GET'])
+def get_locations():
+    try:
+        mydb = get_connection()
+        my_cursor = mydb.cursor(dictionary=True)
+
+        query = "SELECT DISTINCT state, city FROM diagnostics WHERE state IS NOT NULL AND city IS NOT NULL ORDER BY state, city ASC"
+        my_cursor.execute(query)
+        rows = my_cursor.fetchall()
+
+        grouped = {}
+        for row in rows:
+            state = row["state"]
+            city = row["city"]
+            if state not in grouped:
+                grouped[state] = []
+            if city not in grouped[state]:
+                grouped[state].append(city)
+
+        my_cursor.close()
+        mydb.close()
+
+        return make_response(jsonify({
+            "status": "ok",
+            "data": grouped
+        }), 200)
+
+    except Exception as e:
+        print("Erro ao buscar cidades por estado:", str(e))
+        return make_response(jsonify({
+            "status": "error",
+            "message": "Erro no servidor."
+        }), 500)
 
 
 
