@@ -15,6 +15,7 @@ import React from 'react'
 import { api } from '../../lib/api'
 import { SelectChangeEvent } from '@mui/material/Select'
 import dayjs from 'dayjs'
+import TopBar from '../../components/TopBar'
 
 interface Diagnostic {
   id: number
@@ -111,14 +112,9 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar>
-          <Typography variant="h6" noWrap component="div">
-            Painel de Monitoramento
-          </Typography>
-        </Toolbar>
-      </AppBar>
 
+      <TopBar title="Painel de Monitoramento" />
+      
       <Drawer
         variant="permanent"
         sx={{
