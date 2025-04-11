@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React from 'react'
 import { api } from '../lib/api'
 
 export interface Diagnostic {
@@ -25,13 +25,13 @@ export function useDiagnosticsData({
   city = '',
   limit = 10,
 }: UseDiagnosticsDataParams) {
-  const [data, setData] = useState<Diagnostic[]>([])
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState<number | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [data, setData] = React.useState<Diagnostic[]>([])
+  const [page, setPage] = React.useState(1)
+  const [totalPages, setTotalPages] = React.useState<number | null>(null)
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
-  useEffect(() => {
+  React.useEffect(() => {
     async function fetchData() {
       if (!token) return
 

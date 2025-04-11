@@ -1,4 +1,4 @@
-import { Box, Container, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { Box, Card, SelectChangeEvent, Switch, Toolbar, Typography } from "@mui/material";
 import { Bar } from "react-chartjs-2";
 import {
     Chart as ChartJS,
@@ -9,55 +9,26 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
-import { api } from "../../lib/api";
-import { useEffect, useState } from "react";
+import React from "react";
 import dayjs from 'dayjs'
-
-
-interface Metric {
-    total_latency_ms: number;
-    total_packet_loss: number;
-    day: Date;
-}
+import TopBar from "../../components/TopBar";
+import FilterControls from "../../components/Filters";
+import SideMenu from "../../components/SideMenu";
+import { useLocations } from "../../hooks/useLocations";
+import { useMetrics } from "../../hooks/useMetrics";
 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function Chart() {
-    const [data, setData] = useState<Metric[]>([]);
+    const [selectedState, setSelectedState] = React.useState<string>('')
+    const [selectedCity, setSelectedCity] = React.useState<string>('')
+    const [stacked, setStacked] = React.useState<boolean>(false)
 
-    const [location, setLocation] = useState<Record<string, string[]>>({})
-    const [selectedState, setSelectedState] = useState<string>('')
-    const [selectedCity, setSelectedCity] = useState<string>('')
-    const [loading, setLoading] = useState<boolean>(false)
-    const [stacked, setStacked] = useState<boolean>(false)
+    const token = localStorage.getItem('jwt')
 
-    async function fetchMetrics(selectedCity: string, selectedState: string) {
-        try {
-            setLoading(true)
-            const params = new URLSearchParams()
-            params.append('state', selectedState)
-            params.append('city', selectedCity)
-            const response = await api.get(`/metrics?${params.toString()}`)
-            setData(response.data.data)
-        } catch (error) {
-            console.error(error)
-        }
-        finally {
-            setLoading(false)
-        }
-    }
-
-    async function fetchLocations() {
-        try {
-          const response = await api.get('/diagnostics/locations')
-        //   console.log(response)
-          setLocation(response.data.data)
-        }
-        catch (error) {
-          console.error('Error fetching locations:', error)
-        }
-      }
+    const { location } = useLocations(token)
+    const { data, loading } = useMetrics(token, selectedState, selectedCity);
 
 
     function toggleStack() {
@@ -77,7 +48,7 @@ export default function Chart() {
             },
             {
                 label: "Perda de pacote",
-                data: data.map((item) => item.total_packet_loss),   
+                data: data.map((item) => item.total_packet_loss),
                 barPercentage: .7,
                 backgroundColor: "rgba(255, 0, 0, 0.5)",
                 borderColor: "#ff0000",
@@ -89,8 +60,8 @@ export default function Chart() {
         responsive: true,
         scales: {
             y: {
-              beginAtZero: true,
-              stacked: stacked
+                beginAtZero: true,
+                stacked: stacked
             },
             x: {
                 stacked: stacked,
@@ -105,78 +76,67 @@ export default function Chart() {
                 text: "Sales Data",
             },
         },
-        
+
     };
 
 
-      const handleStateChange = (event: SelectChangeEvent) => {
+    const handleStateChange = (event: SelectChangeEvent) => {
         const value = event.target.value
         setSelectedState(value)
         setSelectedCity('')
-      }
-    
-      const handleCityChange = (event: SelectChangeEvent) => {
+    }
+
+    const handleCityChange = (event: SelectChangeEvent) => {
         setSelectedCity(event.target.value)
-      }
-
-    useEffect(() => {
-        fetchMetrics(selectedCity, selectedState)
-    }, [selectedState, selectedCity])
-
-    useEffect(() => {
-        fetchLocations()
-    }, [])
-
+    }
 
 
     return (
-        <div>
-            <Container>
-                <h1>Chart</h1>
-                <p>Chart Page</p>
-                <Box display="flex" gap={2} mb={2}>
-                    <FormControl sx={{ minWidth: 200 }}>
-                        <InputLabel id="select-state-label">Estado</InputLabel>
-                        <Select
-                            labelId="select-state-label"
-                            label="Estado"
-                            value={selectedState}
-                            onChange={handleStateChange}
-                        >
-                            <MenuItem value="">Todos</MenuItem>
-                            {Object.keys(location).map((state) => (
-                                <MenuItem key={state} value={state}>
-                                    {state}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+        <Box sx={{ display: 'flex' }}>
 
-                    <FormControl sx={{ minWidth: 200 }}>
-                        <InputLabel id="select-city-label">Cidade</InputLabel>
-                        <Select
-                            labelId="select-city-label"
-                            label="Cidade"
-                            value={selectedCity}
-                            onChange={handleCityChange}
-                            disabled={!selectedState}
-                        >
-                            <MenuItem value="">Todas</MenuItem>
+            <TopBar title="Painel de Monitoramento" />
+            <SideMenu />
 
-                            {location[selectedState]?.map((city) => (
-                                <MenuItem key={city} value={city}>
-                                    {city}
-                                </MenuItem>
-                            ))}
 
-                        </Select>
-                    </FormControl>
+            <Box component="main"
+                sx={{
+                    flexGrow: 1,
+                    p: 3,
+                    backgroundColor: '#f9f9f9',
+                    minHeight: '100vh',
+                }} >
+                <Toolbar />
+                <Typography variant="h4" gutterBottom> Grafico </Typography>
+
+
+                <Box display="flex" flexDirection="row" gap={2} mb={2} >
+
+                    <FilterControls
+                        location={location}
+                        selectedState={selectedState}
+                        selectedCity={selectedCity}
+                        onStateChange={handleStateChange}
+                        onCityChange={handleCityChange}
+                    >
+                        <Box display="flex" gap={2} flexWrap="wrap" alignItems="center">
+                            <Typography variant="body1">Modo empilhado</Typography>
+                            <Switch title="Empilhar gráfico" onClick={toggleStack} />
+                        </Box>
+                    </FilterControls>
                 </Box>
+
                 {!loading && (
-                    <Bar data={dataChart} options={options} />
+                    <Card sx={{ mb: 2, p: 2 }}>
+                        <Box sx={{
+                            maxWidth: '800px',
+                            margin: '0 auto',
+                            mt: 4,
+                        }}>
+                            <Bar data={dataChart} options={options} />
+                        </Box>
+                    </Card>
                 )}
-                <button type="button" onClick={toggleStack}>Clique</button>
-            </Container>
-        </div>
+            </Box>
+        </Box>
     );
 }

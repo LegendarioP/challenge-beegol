@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React from 'react'
 import { api } from '../lib/api'
 
 
@@ -7,11 +7,11 @@ interface LocationData {
 }
 
 export function useLocations(token: string | null) {
-  const [location, setLocation] = useState<LocationData>({})
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [location, setLocation] = React.useState<LocationData>({})
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
-  useEffect(() => {
+  React.useEffect(() => {
     async function fetchLocations() {
       if (!token) return
 
