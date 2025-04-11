@@ -4,85 +4,52 @@ import {
   Box, Toolbar, Typography
 } from '@mui/material'
 import React from 'react'
-import { api } from '../../lib/api'
 import { SelectChangeEvent } from '@mui/material/Select'
 import dayjs from 'dayjs'
 import TopBar from '../../components/TopBar'
 import SideMenu from '../../components/SideMenu'
 import FilterControls from '../../components/Filters'
-import { useLocations } from '../../hooks/useLocations'
 import { PaginationControls } from '../../components/PaginationControls'
 
-interface Diagnostic {
-  id: number
-  device_id: string
-  city: string
-  state: string
-  latency_ms: number
-  packet_loss: number
-  quality_of_service: string
-  date: string
-}
+import { useLocations } from '../../hooks/useLocations'
+import { useDiagnosticsData } from '../../hooks/useDiagnosticsData'
+
 
 export default function Dashboard() {
-  const [data, setData] = React.useState<Diagnostic[]>([])
-  const [page, setPage] = React.useState(1)
-  const [totalPages, setTotalPages] = React.useState<number | null>(null)
   const [limit, setLimit] = React.useState(10)
-  const [loading, setLoading] = React.useState(false)
 
   const [selectedState, setSelectedState] = React.useState<string>('')
   const [selectedCity, setSelectedCity] = React.useState('')
 
-
+ 
   const token = localStorage.getItem('jwt')
   const { location } = useLocations(token)
 
+  const {
+    data,
+    page,
+    setPage,
+    totalPages,
+    loading,
+  } = useDiagnosticsData({
+    token,
+    state: selectedState,
+    city: selectedCity,
+    limit,
+  })
 
-  async function fetchInitalData(
-    limit: number,
-    page: number,
-    state?: string,
-    city?: string
-  ) {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams()
-      params.append('limit', String(limit))
-      params.append('page', String(page))
-      if (state) params.append('state', state)
-      if (city) params.append('city', city)
 
-      const response = await api.get(`/diagnostics?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      setData(response.data.data)
-      setTotalPages(response.data.total_pages)
-      setPage(response.data.page)
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleStateChange = (event: SelectChangeEvent) => {
+  function handleStateChange (event: SelectChangeEvent)  {
     const value = event.target.value
     setPage(1)
     setSelectedState(value)
     setSelectedCity('')
   }
 
-  const handleCityChange = (event: SelectChangeEvent) => {
+  function handleCityChange(event: SelectChangeEvent) {
     setPage(1)
     setSelectedCity(event.target.value)
   }
-
-  React.useEffect(() => {
-    fetchInitalData(limit, page, selectedState, selectedCity)
-  }, [limit, page, selectedState, selectedCity])
 
   return (
     <Box sx={{ display: 'flex' }}>
