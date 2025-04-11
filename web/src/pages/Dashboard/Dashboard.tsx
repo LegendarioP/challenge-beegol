@@ -18,6 +18,7 @@ import dayjs from 'dayjs'
 import TopBar from '../../components/TopBar'
 import SideMenu from '../../components/SideMenu'
 import FilterControls from '../../components/Filters'
+import { useLocations } from '../../hooks/useLocations'
 
 interface Diagnostic {
   id: number
@@ -40,11 +41,12 @@ export default function Dashboard() {
   const [selectedState, setSelectedState] = React.useState<string>('')
   const [selectedCity, setSelectedCity] = React.useState('')
 
-  const [location, setLocation] = React.useState<Record<string, string[]>>({})
+  // const [location, setLocation] = React.useState<Record<string, string[]>>({})
 
   const token = localStorage.getItem('jwt')
-  
+  const { location, loading: loadingLocations } = useLocations(token)
 
+  // console.log(location)
 
   async function fetchInitalData(
     limit: number,
@@ -76,21 +78,19 @@ export default function Dashboard() {
   }
 
 
-  async function fetchLocations() {
-    try {
-      const response = await api.get('/diagnostics/locations', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      console.log(response)
-      setLocation(response.data.data)
-      // return response.data
-    }
-    catch (error) {
-      console.error('Error fetching locations:', error)
-    }
-  }
+  // async function fetchLocations() {
+  //   try {
+  //     const response = await api.get('/diagnostics/locations', {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     })
+  //     setLocation(response.data.data)
+  //   }
+  //   catch (error) {
+  //     console.error('Error fetching locations:', error)
+  //   }
+  // }
 
   const handleStateChange = (event: SelectChangeEvent) => {
     const value = event.target.value
@@ -108,9 +108,9 @@ export default function Dashboard() {
     fetchInitalData(limit, page, selectedState, selectedCity)
   }, [limit, page, selectedState, selectedCity])
 
-  React.useEffect(() => {
-    fetchLocations()
-  }, [])
+  // React.useEffect(() => {
+  //   fetchLocations()
+  // }, [])
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -136,46 +136,7 @@ export default function Dashboard() {
         {loading ? (
           <p>Carregando...</p>
         ) : (
-          <>
-            {/* <Card sx={{ mb: 2, p: 2 }}>
-              <Box display="flex" gap={2} flexWrap="wrap">
-                <FormControl sx={{ minWidth: 200 }}>
-                  <InputLabel id="select-state">Estado</InputLabel>
-                  <Select
-                    labelId="select-state"
-                    label="Estado"
-                    value={selectedState}
-                    onChange={handleStateChange}
-                  >
-                    <MenuItem value="">Todos</MenuItem>
-                    {Object.keys(location).map((state) => (
-                      <MenuItem key={state} value={state}>
-                        {state}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl sx={{ minWidth: 200 }}>
-                  <InputLabel id="select-city">Cidade</InputLabel>
-                  <Select
-                    labelId="select-city"
-                    label="Cidade"
-                    value={selectedCity}
-                    onChange={handleCityChange}
-                    disabled={!selectedState}
-                  >
-                    <MenuItem value="">Todas</MenuItem>
-                    {location[selectedState]?.map((city) => (
-                      <MenuItem key={city} value={city}>
-                        {city}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-            </Card> */}
-
+          <> 
             <FilterControls
               location={location}
               selectedState={selectedState}
