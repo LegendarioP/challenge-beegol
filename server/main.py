@@ -4,12 +4,12 @@ from flask import Flask, make_response, jsonify, request
 from flask_cors import CORS
 import time
 
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="rootpass",
-    database="BeegolDatabase"
-)
+# mydb = mysql.connector.connect(
+#     host="localhost",
+#     user="root",
+#     password="rootpass",
+#     database="BeegolDatabase"
+# )
 
 app = Flask(__name__)
 cors = CORS(app, origins=["*"])
@@ -181,6 +181,32 @@ def get_locations():
         }), 500)
 
 
+@app.route('/metrics', methods=['GET'])
+def get_metrics():
+    try:
+        mydb = get_connection()
+        my_cursor = mydb.cursor(dictionary=True)
+
+        query = "SELECT DATE(date) as day, SUM(latency_ms) as total_latency_ms, SUM(packet_loss) as total_packet_loss FROM diagnostics GROUP BY DATE(date) ORDER BY day ASC"
+        my_cursor.execute(query)
+        rows = my_cursor.fetchall()
+
+        formatted_data = [{"day": row["day"], "total_latency_ms": row["total_latency_ms"], "total_packet_loss": row["total_packet_loss"]} for row in rows]
+
+        my_cursor.close()
+        mydb.close()
+
+        return make_response(jsonify({
+            "status": "ok",
+            "data": formatted_data
+        }), 200)
+    except Exception as e:
+        print("Erro ao buscar métricas:", str(e))
+        return make_response(jsonify({
+            "status": "error",
+            "message": "Erro no servidor."
+        }), 500)
+
 
 
 @app.route('/diagnostics', methods=['POST']) 
@@ -222,6 +248,7 @@ def add_diagnostics():
         ),
         201,
     )
+
 
 
 app.run(debug=True)
