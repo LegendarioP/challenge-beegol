@@ -11,5 +11,29 @@ services:
     volumes:
       - ./init:/docker-entrypoint-initdb.d
       - beegol-data:/var/lib/mysql
+    networks:
+      - beegol-network
+
+  api:
+    build: .
+    container_name: beegol-api
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=rootpass
+      - MYSQL_DATABASE=BeegolDatabase
+    depends_on:
+      - mysql
+    networks:
+      - beegol-network
+
+networks:
+  beegol-network:
+    driver: bridge
+
 volumes:
   beegol-data:

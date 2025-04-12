@@ -1,49 +1,72 @@
 # Backend do Servidor BEEGOL
 
-Este é o backend do servidor BEEGOL, desenvolvido em ambiente Docker para facilitar a criação de imagens e acelerar o processo de deploy.
+Este é o backend do servidor BEEGOL, desenvolvido em Flask com suporte a autenticação JWT e integração com banco de dados MySQL. O projeto utiliza Docker para facilitar o desenvolvimento e deploy.
 
-> **Observação:** O projeto está em desenvolvimento. Abaixo, você encontra um checklist atualizado com os pontos implementados e pendentes.
+## Funcionalidades Implementadas
 
----
+### Autenticação
+- Endpoint `/login` para autenticação de usuários
+- Proteção de rotas com JWT (JSON Web Tokens)
 
-## Checklist de Implementação
+### Diagnósticos
+- Endpoint `/diagnostics` para consulta de diagnósticos com suporte a:
+  - Paginação (`page` e `limit`)
+  - Filtros por:
+    - `device_id`
+    - `city`
+    - `state`
+    - `date`
 
-- [x] **Rota "diagnostics":**  
-  - Início da implementação da rota para acesso aos diagnósticos de rede.
-  
-- [x] **Estrutura dos Endpoints:**  
-  - Definição inicial da estrutura, separando endpoints responsáveis por paginação e agregação.
+### Localizações
+- Endpoint `/diagnostics/locations` para listar todas as cidades e estados disponíveis
+- Retorna dados agrupados por estado
 
-- [x] **Conexão com o Banco de Dados:**  
-  - Criação dos scripts iniciais para conexão, utilizando SQLite para desenvolvimento (ou outro banco definido).
+### Métricas
+- Endpoint `/metrics` para análise de métricas com:
+  - Soma de latência por dia
+  - Soma de perda de pacotes por dia
+  - Filtros por estado e cidade
 
-- [x] **Endpoint de Paginação:**  
-  - Desenvolvimento da lógica para retornar dados de forma paginada, com suporte aos parâmetros `page` e `limit`.
-  - Implementação de filtros de consulta por `city` e `state` para refinar os resultados.
-
-- [ ] **Endpoint de Agregação:**  
-  - Implementar a lógica para agrupar os diagnósticos por data, realizando a soma de latência e perda de pacotes.
-  - Adicionar suporte aos filtros (caso aplicável).
-
-- [ ] **Documentação:**  
-  - Atualizar este README com detalhes dos endpoints implementados e instruções de execução do backend.
-
----
+## Tecnologias Utilizadas
+- Flask (Framework Python)
+- MySQL (Banco de Dados)
+- JWT (Autenticação)
+- Docker (Containerização)
+- Flask-CORS (Cross-Origin Resource Sharing)
 
 ## Instruções de Execução
 
-1. **Ambiente Docker:**  
-   Garanta que o Docker esteja instalado em sua máquina. Utilize os arquivos de configuração disponíveis para criar e iniciar o container da aplicação.
+1. **Pré-requisitos**
+   - Docker instalado
+   - Docker Compose instalado
 
-2. **Criação da Imagem:**  
-   Execute os comandos do Makefile para build e deploy da imagem, facilitando a execução e os testes do servidor.
+2. **Configuração do Ambiente**
+   ```bash
+   # Construir as imagens Docker
+   docker-compose build
 
-3. **Testes:**  
-   Realize testes dos endpoints implementados (por exemplo, via Postman ou cURL) para confirmar o funcionamento da rota "diagnostics" e da funcionalidade de paginação.
+   # Iniciar os containers
+   docker-compose up
+   ```
 
-4. **Atualizações:**  
-   Consulte este README para acompanhar as próximas etapas de desenvolvimento e atualizações na documentação.
+3. **Acesso à API**
+   - A API estará disponível em `http://localhost:5000`
+   - Credenciais padrão:
+     - Usuário: `admin`
+     - Senha: `123456`
 
----
+4. **Endpoints Disponíveis**
+   - `POST /login` - Autenticação
+   - `GET /diagnostics` - Lista de diagnósticos
+   - `GET /diagnostics/locations` - Lista de localizações
+   - `GET /metrics` - Métricas de desempenho
 
-Este documento será atualizado conforme o progresso do projeto. Em caso de dúvidas ou para contribuições, favor contatar a equipe de desenvolvimento.
+## Estrutura do Projeto
+```
+.
+├── main.py              # Arquivo principal da aplicação
+├── docker-compose.yml   # Configuração do Docker Compose
+├── init/               # Scripts de inicialização
+└── db/                 # Arquivos relacionados ao banco de dados
+```
+

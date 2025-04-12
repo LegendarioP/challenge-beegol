@@ -4,6 +4,10 @@ from flask import Flask, make_response, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import time
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # mydb = mysql.connector.connect(
 #     host="localhost",
@@ -15,7 +19,7 @@ import time
 app = Flask(__name__)
 cors = CORS(app, origins=["*"])
 app.config['JSON_SORT_KEYS'] = False
-app.config['JWT_SECRET_KEY'] = 'beegol-challenge-secret-key'
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'beegol-challenge-secret-key')
 jwt = JWTManager(app)
 
 
@@ -23,10 +27,10 @@ def get_connection(retries=3, delay=2):
     for attempt in range(retries):
         try:
             connection = mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password="rootpass",
-                database="BeegolDatabase"
+                host=os.getenv('MYSQL_HOST', 'localhost'),
+                user=os.getenv('MYSQL_USER', 'root'),
+                password=os.getenv('MYSQL_PASSWORD', 'rootpass'),
+                database=os.getenv('MYSQL_DATABASE', 'BeegolDatabase')
             )
             if connection.is_connected():
                 return connection
@@ -34,7 +38,7 @@ def get_connection(retries=3, delay=2):
             print(f"Tentativa {attempt + 1} falhou: {e}")
             time.sleep(delay)
     raise Exception("Não foi possível conectar ao banco de dados após múltiplas tentativas.")
-
+    
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -229,6 +233,5 @@ def get_metrics():
         }), 500)
 
 
-
-
-app.run(debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', debug=True)
