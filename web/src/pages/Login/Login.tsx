@@ -2,6 +2,8 @@ import banner from '../../../public/login-banner.jpg'
 import { Box, Button, Container, TextField, Typography } from '@mui/material'
 import React from 'react'
 import { api } from '../../lib/api.ts'
+import Cookies from 'js-cookie';
+
 
 export default function Login() {
 
@@ -23,7 +25,8 @@ export default function Login() {
                 password,
             })
             console.log(response.data)
-            localStorage.setItem('jwt', response.data.access_token)
+            Cookies.set('jwt', response.data.access_token);
+
 
             if (localStorage.getItem('redirectTo')) {
                 window.location.href = localStorage.getItem('redirectTo') || '/'
