@@ -14,6 +14,9 @@ import { PaginationControls } from '../../components/PaginationControls'
 import { useLocations } from '../../hooks/useLocations'
 import { useDiagnosticsData } from '../../hooks/useDiagnosticsData'
 
+import Cookies from 'js-cookie';
+
+
 
 export default function Dashboard() {
   const [limit, setLimit] = React.useState(10)
@@ -22,7 +25,8 @@ export default function Dashboard() {
   const [selectedCity, setSelectedCity] = React.useState('')
 
  
-  const token = localStorage.getItem('jwt')
+  const token = Cookies.get('jwt') || null;
+
   const { location } = useLocations(token)
 
   const {

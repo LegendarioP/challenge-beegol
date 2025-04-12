@@ -16,6 +16,8 @@ import FilterControls from "../../components/Filters";
 import SideMenu from "../../components/SideMenu";
 import { useLocations } from "../../hooks/useLocations";
 import { useMetrics } from "../../hooks/useMetrics";
+import Cookies from 'js-cookie';
+
 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -25,7 +27,7 @@ export default function Chart() {
     const [selectedCity, setSelectedCity] = React.useState<string>('')
     const [stacked, setStacked] = React.useState<boolean>(false)
 
-    const token = localStorage.getItem('jwt')
+    const token = Cookies.get('jwt') || null;
 
     const { location } = useLocations(token)
     const { data, loading } = useMetrics(token, selectedState, selectedCity);

@@ -1,54 +1,59 @@
-# React + TypeScript + Vite
+## Executando o Projeto Sem Docker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Para rodar o projeto localmente sem usar Docker, siga os passos abaixo:
 
-Currently, two official plugins are available:
+### Pré-requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Certifique-se de ter os seguintes itens instalados no seu sistema:
+- [Node.js](https://nodejs.org/) (recomenda-se a versão 16 ou superior)
+- [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/)
 
-## Expanding the ESLint configuration
+### Passos
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. **Clone o Repositório**  
+   Clone o repositório do projeto para sua máquina local:
+   ```bash
+   git clone https://github.com/seu-repositorio.git
+   cd seu-repositorio
+   ```
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+2. **Instale as Dependências**  
+   Instale as dependências necessárias usando npm ou yarn:
+   ```bash
+   npm install
+   # ou
+   yarn install
+   ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3. **Inicie o Servidor de Desenvolvimento**  
+   Execute o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   # ou
+   yarn dev
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+4. **Acesse a Aplicação**  
+   Abra o navegador e navegue até `http://localhost:5173` (ou a porta especificada no terminal) para visualizar a aplicação.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+### Comandos Adicionais
+
+- **Build para Produção**  
+  Para criar uma build de produção da aplicação:
+  ```bash
+  npm run build
+  # ou
+  yarn build
+  ```
+
+- **Pré-visualizar a Build de Produção**  
+  Para pré-visualizar a build de produção localmente:
+  ```bash
+  npm run preview
+  # ou
+  yarn preview
+  ```
+
+### Solução de Problemas
+
+Se você encontrar problemas, certifique-se de que todas as dependências foram instaladas corretamente e que a versão do Node.js atende aos requisitos. Você também pode verificar os logs no terminal para mais detalhes.
